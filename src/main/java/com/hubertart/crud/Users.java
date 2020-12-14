@@ -1,6 +1,8 @@
 package com.hubertart.crud;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 
 @Entity
@@ -11,8 +13,8 @@ public class Users {
     private Long id;
     @Column
     private String email;
+//    @JsonIgnore
     @Column
-    @JsonIgnore
     private String password;
 
     public Long getId() {
@@ -31,10 +33,12 @@ public class Users {
         this.email = email;
     }
 
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
 
+    @JsonProperty("password")
     public void setPassword(String password) {
         this.password = password;
     }

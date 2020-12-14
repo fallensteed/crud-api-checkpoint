@@ -2,6 +2,7 @@ package com.hubertart.crud;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -37,15 +38,24 @@ public class UsersController {
         return this.repository.save(user);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String deleteById(@PathVariable Long id){
         this.repository.deleteById(id);
         String count = "{ \"count\": " + this.repository.count() + "}";
         return count;
     }
 
-    @PostMapping("/authenticate")
+    @PostMapping(value = "/authenticate", produces = MediaType.APPLICATION_JSON_VALUE)
     public String authenticate(@RequestBody Users user){
-        return "";
+        String[] userDetails = this.repository.findByEmail(user.getEmail()).split(",");
+        String userId = userDetails[0];
+        String userPassword = userDetails[1];
+        if(userPassword.equals(user.getPassword())){
+            String jsonReturn = String.format("{ \"authenticated\": true, \"user\": { \"id\": %s, \"email\": \"%s\" " +
+                    "} }", userId, user.getEmail());
+            return jsonReturn;
+        }
+        String jsonReturn = String.format("{ \"authenticated\": false }");
+        return jsonReturn;
     }
 }

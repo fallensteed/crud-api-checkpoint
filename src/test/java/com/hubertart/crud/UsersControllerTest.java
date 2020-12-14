@@ -49,6 +49,7 @@ public class UsersControllerTest {
 
         this.mvc.perform(request)
                 .andExpect(status().isOk())
+//                .andExpect(content().string(""));
                 .andExpect(jsonPath("$[0].id", instanceOf(Number.class)))
                 .andExpect(jsonPath("$[0].email", is("test1@email.com")))
                 .andExpect(jsonPath("$[1].id", instanceOf(Number.class)))
@@ -200,7 +201,33 @@ public class UsersControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authenticated", is(true)))
                 .andExpect(jsonPath("$.user.id", instanceOf(Number.class)))
-                .andExpect(jsonPath("$.user.email", is("newEmail@email.com")));
+                .andExpect(jsonPath("$.user.email", is("test1@email.com")));
     }
 
+    @Test
+    @Transactional
+    @Rollback
+    public void testAuthenticationFalse() throws Exception {
+        Users user1 = new Users();
+        user1.setEmail("test1@email.com");
+        user1.setPassword("testPassword1");
+        repository.save(user1);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> newUser = new HashMap<String, Object>(){
+            {
+                put("email", "test1@email.com");
+                put("password", "wrongPassword");
+            }
+        };
+        String json = objectMapper.writeValueAsString(newUser);
+
+        MockHttpServletRequestBuilder request = post("/users/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        this.mvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated", is(false)));
+    }
 }
